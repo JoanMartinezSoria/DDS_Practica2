@@ -1,0 +1,15 @@
+---
+title: "Actividad Evaluable 2"
+output: pdf_document
+date: "2026-01-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
