@@ -10,10 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 #install.packages("rvest")
-#install.packages("httr2")
 
 library("rvest")
-library("httr2")
 ```
 
 ## Pregunta 1:
@@ -38,3 +36,17 @@ html <- read_html(url)
 
 html |> html_element("h1")
 ```
+
+2. Analizar el contenido de la web, buscando el título de la página (que en HTML
+se etiqueta como “title”).
+En las cabeceras web encontramos información como el título, los ficheros de
+estilo visual, y meta-información como el nombre del autor de la página, una
+descripción de esta, el tipo de codificación de esta, o palabras clave que indican
+qué tipo de información contiene la página. Una vez descargada la página, y
+convertida a un formato analizable (como XML), buscaremos los elementos de
+tipo “title”. P.e. “<title>Titulo de Página</title>”.
+
+```{r}
+html |> html_elements("title") |> html_text2()
+```
+
