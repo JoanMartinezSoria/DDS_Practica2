@@ -59,7 +59,15 @@ nos quedaremos con la URL de destino y con el valor del enlace (texto del
 enlace).
 
 ```{r}
-a_href <- html |> html_elements("a") |> html_attr("href")
+urls <- html |> html_elements("a") |> html_attr("href")
+texto <- html |> html_elements("a") |> html_text2()
+
+datos <- data.frame(
+  URL = urls,
+  Texto = texto,
+  stringsAsFactors = FALSE
+)
+head(datos, 10)
 ```
 
 
