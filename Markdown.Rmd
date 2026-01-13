@@ -90,31 +90,6 @@ head(datos, 10)
     ese mismo objetivo. En este paso nos interesa reunir los datos
     obtenidos en el anterior paso. Tendremos que comprobar, para cada
     enlace, cuantas veces aparece.
-    
-```{r}
-datos$URL <- gsub("#", url, datos$URL)
-head(datos)
-```
-  
-    ```{r}
-# Definimos la base para no repetirla
-base_url <- "https:"
-main_url <- "https://www.mediawiki.org"
-
-datos <- datos %>%
-  mutate(URL = if_else(
-    condition = str_starts(URL, "//"),  
-    true      = str_c(base_url, URL),   
-    false     = URL                     
-  ))
-
-datos <- datos %>%
-  mutate(URL = if_else(
-    condition = str_starts(URL, "/"),  
-    true      = str_c(main_url, URL),   
-    false     = URL                     
-  ))
-```
 
 ```{r}
 tabla_freq <- table(datos)
@@ -156,6 +131,36 @@ head(datos, 10)
     caracteres de la URL encontramos “//” o “http”. Para tratar las URLs
     podemos usar la ayuda de la función “paste”, para manipular cadenas
     de caracteres y poder añadir prefijos a las URLs si fuera necesario.
+    
+```{r}
+copia_datos <- datos
+```
+
+    
+```{r}
+datos$URL <- gsub("#", url, datos$URL)
+head(datos)
+```
+  
+```{r}
+# Definimos la base para no repetirla
+base_url <- "https:"
+main_url <- "https://www.mediawiki.org"
+
+datos <- datos %>%
+  mutate(URL = if_else(
+    condition = str_starts(URL, "//"),  
+    true      = str_c(base_url, URL),   
+    false     = URL                     
+  ))
+
+datos <- datos %>%
+  mutate(URL = if_else(
+    condition = str_starts(URL, "/"),  
+    true      = str_c(main_url, URL),   
+    false     = URL                     
+  ))
+```
 
 ```{r}
 s <- c()
@@ -163,10 +168,18 @@ for (i in 1:length(datos$URL)) {
   s[i] <- as.character(session(as.character(datos$URL[i]))$response$status_code)
   Sys.sleep(0.1)
 }
+datos <- copia_datos
 datos$Estado <- s
 
 head(datos)
 ```
+
+## Pregunta 2:
+Elaborad, usando las librerías de gráficos base y qplot (ggplot2), una infografía sobre los datos obtenidos. Tal infografía será una reunión de gráficos donde se muestren los
+siguientes detalles:
+
+1. Un histograma con la frecuencia de aparición de los enlaces, pero separado por
+URLs absolutas (con “http…”) y URLs relativas.
 
 
 
