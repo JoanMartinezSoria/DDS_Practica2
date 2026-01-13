@@ -15,12 +15,16 @@ knitr::opts_chunk$set(echo = TRUE)
 #install.packages("rvest")
 #install.packages("httr")
 #install.packages("dplyr")
-#install.packages("stringr")
+#install.packages("ggplot2")
+#install.packages("forcats")
+
 
 library("rvest")
 library("httr")
 library("dplyr")
 library("stringr")
+library("ggplot2")
+library("forcats")
 ```
 
 ## Pregunta 1:
@@ -181,5 +185,54 @@ siguientes detalles:
 1. Un histograma con la frecuencia de aparición de los enlaces, pero separado por
 URLs absolutas (con “http…”) y URLs relativas.
 
+```{r}
+absolutas <- datos[!str_starts(datos$URL, "/") & !str_starts(datos$URL, "#"), ]
+relativas <- datos[str_starts(datos$URL, "/") | str_starts(datos$URL, "#"), ]
+```
 
+```{r}
+absolutas %>%
+  ggplot(aes(x=URL, y=Repeticiones)) +
+    geom_bar(stat="identity", fill="#f68060", alpha=.6, width=.4) +
+    coord_flip() +
+    theme_bw() +
+    # Reduce el tamaño del texto del eje Y (que ahora está a la izquierda)
+    theme(axis.text.y = element_text(size = 2))
+```
+
+```{r}
+relativas %>%
+  ggplot(aes(x=URL, y=Repeticiones)) +
+    geom_bar(stat="identity", fill="#f68060", alpha=.6, width=.4) +
+    coord_flip() +
+    theme_bw() +
+    # Reduce el tamaño del texto del eje Y (que ahora está a la izquierda)
+    theme(axis.text.y = element_text(size = 2))
+```
+2. Un gráfico de barras indicando la suma de enlaces que apuntan a otros
+dominios o servicios (distinto a https://www.mediawiki.org en el caso de
+ejemplo) vs. la suma de los otros enlaces.
+Aquí queremos distinguir enlaces que apuntan a mediawiki versus el resto.
+Sabemos que las URLs relativas ya apuntan dentro, por lo tanto hay que analizar
+las URLs absolutas y comprobar que apunten a https://www.mediawiki.org.
+
+```{r}
+dominio <- sum(relativas$Repeticiones) + sum(absolutas[str_starts(absolutas$URL, main_url), "Repeticiones"])
+otros <- sum(absolutas$Repeticiones) - sum(absolutas[str_starts(absolutas$URL, main_url), "Repeticiones"])
+total <- sum(datos$Repeticiones)
+total
+dominio + otros
+```
+```{r}
+dominio_o_no <- data.frame(
+  Tipo=c("Dominio", "Otros"),  
+  value=c(dominio, otros)
+)
+
+ggplot(dominio_o_no, aes(x=Tipo, y=value, fill=Tipo)) +  
+  geom_col() + 
+  scale_fill_manual(values = c("red", "blue") ) +
+  theme_bw() +
+  theme(legend.position="none")
+```
 
