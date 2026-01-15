@@ -220,7 +220,7 @@ el atributo status_code de la respuesta, luego se realiza una pequeña
 pausa para no estresar el servidor.
 
 Luego volvemos a cambiar los datos por los por los originales y
-guradamos los datos en una nueva columan que nombramos **Estado**
+guradamos los datos en una nueva columan que nombramos **Estado.**
 
 ```{r}
 s <- c()
@@ -246,10 +246,10 @@ gráficos donde se muestren los siguientes detalles:
 Para conseguir las URL relativas y absolutas realizamos el siguiente
 calculo:
 
-1.  Absolutas = URL que **no** empiezan por **/** + URL no que empiezen
-    por **#.**
+1.  **Absolutas** = URL que **no** empiezan por **/** + URL no que
+    empiezen por **#.**
 
-2.  Relativas = URL que empiezen por / o URL que empiezen por **#.**
+2.  **Relativas** = URL que empiezen por / o URL que empiezen por **#.**
 
 ```{r}
 absolutas <- datos[!str_starts(datos$URL, "/") & !str_starts(datos$URL, "#"), ]
@@ -288,13 +288,29 @@ relativas %>%
     que analizar las URLs absolutas y comprobar que apunten a
     <https://www.mediawiki.org>.
 
+Para el siguiente grafico de barras, decidimos almacenar las
+**Repeticiones** de las url que apuntan a otros dominios de las que
+apuntan al mismo. Para ello realizamos los siguientes calculos:
+
+1.  **Dominio:** Es la suma de las Repeticiones de URLs **Relativas** +
+    suma de las Repeticiones de URLs **Absolutas** que empiezan por
+    <https://www.mediawiki.org>.
+
+2.  **Otros:** Es la suma de las Repeticiones de URLs **Absolutas** que
+    **NO** empiezan por [https://www.mediawiki.org](#0){.uri}.
+
 ```{r}
 dominio <- sum(relativas$Repeticiones) + sum(absolutas[str_starts(absolutas$URL, main_url), "Repeticiones"])
-otros <- sum(absolutas$Repeticiones) - sum(absolutas[str_starts(absolutas$URL, main_url), "Repeticiones"])
+otros <- sum(absolutas[!str_starts(absolutas$URL, main_url), "Repeticiones"])
+
 total <- sum(datos$Repeticiones)
 total
 dominio + otros
 ```
+
+Luego creamos un barplot que representara el pequeño data frame que
+acabamos de formar con estas dos variables y lo representamos
+graficamente usando la libreria de *ggplot2*.
 
 ```{r}
 dominio_o_no <- data.frame(
@@ -316,16 +332,23 @@ ggplot(dominio_o_no, aes(x=Tipo, y=Cantidad, fill=Tipo)) +
     uniremos a los anteriores. El objetivo final es obtener una imagen
     que recopile los gráficos generados.
 
+Para este ultimo ejercicio hacemos algo parecido al anterior, donde en
+este caso solo realizamos el conteo de que URL tenian *status_code* 200
+y cuales tenian *status_code* 404.
+
 ```{r}
-estado_200 <- sum(datos[str_starts(absolutas$Estado, "200"), "Repeticiones"]) 
-estado_404 <- sum(datos[str_starts(absolutas$Estado, "404"), "Repeticiones"])
+estado_200 <- count(datos[str_starts(absolutas$Estado, "200"), ]) 
+estado_404 <- count(datos[str_starts(absolutas$Estado, "404"), ])
 ```
+
+Y finalmente realizamos el mismo proceso de antes, pero ahora creamos un
+*Pie Chart*.
 
 ```{r}
 # Basic piechart
 estados <- data.frame(
   Tipo=c("Estado_200", "Estado_404"),  
-  Cantidad=c(estado_200, estado_404)
+  Cantidad=c(estado_200[1,1], estado_404[1,1])
 )
 
 ggplot(estados, aes(x="", y=Cantidad, fill=Tipo)) +
