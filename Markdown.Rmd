@@ -11,8 +11,8 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Instalación y carga de las librerias para ser usadas a lo largo de la
-ejecución del codigo
+Instalación y carga de las librerías para ser usadas a lo largo de la
+ejecución del código.
 
 ```{r}
 #install.packages("rvest")
@@ -20,7 +20,7 @@ ejecución del codigo
 #install.packages("dplyr")
 #install.packages("ggplot2")
 #install.packages("forcats")
-
+#install.packages("patchwork")
 
 library("rvest")
 library("httr")
@@ -28,31 +28,32 @@ library("dplyr")
 library("stringr")
 library("ggplot2")
 library("forcats")
+library("patchwork")
 ```
 
 ## Pregunta 1:
 
-Queremos programar un programa de tipo web scrapping con el que podamos
-obtener una página web, mediante su URL, y poder analizar su contenido
-HTML con tal de extraer datos e información específica. Nuestro programa
-ha de ser capaz de cumplir con los siguientes pasos:
+**Queremos programar un programa de tipo *web scraping* con el que
+podamos obtener una página web, mediante su URL, y poder analizar su
+contenido HTML con tal de extraer datos e información específica.
+Nuestro programa ha de ser capaz de cumplir con los siguientes pasos:**
 
-1.  Descargar la página web de la URL indicada, y almacenarlo en un
+1.  **Descargar la página web de la URL indicada, y almacenarlo en un
     formato de R apto para ser tratado. El primer paso para realizar
-    tareas de crawling y scraping es poder descargar los datos de la
+    tareas de *crawling* y *scraping* es poder descargar los datos de la
     web. Para esto usaremos la capacidad de R y de sus librerías (httr y
     XML) para descargar webs y almacenarlas en variables que podamos
-    convertir en un formato fácil de analizar (p.e. de HTML a XML).
+    convertir en un formato fácil de analizar (p.e. de HTML a XML).**
 
-Primero de todo guardamos la url a analizar dentro de una variable para
-poder usarla mas adelante.
+Primero de todo guardamos la URL a analizar dentro de una variable para
+poder usarla más adelante.
 
 ```{r}
 url <- "https://www.mediawiki.org/wiki/MediaWiki"
 ```
 
-Como nosotros usamos la libreria **rvest**, podemos obtener los datos de
-la pagina haciendo un simple *read_html*.
+Como nosotros usamos la librería **rvest**, podemos obtener los datos de
+la página haciendo un simple *read_html*.
 
 ```{r}
 html <- read_html(url)
@@ -61,44 +62,41 @@ html <- read_html(url)
 html |> html_element("h1")
 ```
 
-2.  Analizar el contenido de la web, buscando el título de la página
+2.  **Analizar el contenido de la web, buscando el título de la página
     (que en HTML se etiqueta como “title”). En las cabeceras web
     encontramos información como el título, los ficheros de estilo
     visual, y meta-información como el nombre del autor de la página,
     una descripción de esta, el tipo de codificación de esta, o palabras
     clave que indican qué tipo de información contiene la página. Una
     vez descargada la página, y convertida a un formato analizable (como
-    XML), buscaremos los elementos de tipo “title”. P.e. “
+    XML), buscaremos los elementos de tipo “title”. P.e.
+    `<title>Titulo de Página</title>`.**
 
-    <title>Titulo de Página</title>
-
-    ”.
-
-Para obtener el titulo de la pagina web, buscamos con *html_elements*
-donde apareze *title* y obtenemos su texto, que guardamos en una
-variable por si nos hace falta mas adelante.
+Para obtener el título de la página web, buscamos con *html_elements*
+donde aparece *title* y obtenemos su texto, que guardamos en una
+variable por si nos hace falta más adelante.
 
 ```{r}
 title <- html |> html_elements("title") |> html_text2()
 title
 ```
 
-3.  Analizar el contenido de la web, buscando todos los enlaces (que en
-    HTML se etiquetan como “a”), buscando el texto del enlace, así como
-    la URL. Vamos a extraer, usando las funciones de búsqueda XML, todos
-    los enlaces que salen de esta página con tal de listarlos y poder
-    descargarlas más tarde. Sabemos que estos son elementos de tipo
-    “<a>”, que tienen el atributo “href” para indicar la URL del enlace.
-    P.e. “<a href = ‘enlace’>Texto del Enlace</a>”. Del enlace nos
-    quedaremos con la URL de destino y con el valor del enlace (texto
-    del enlace).
+3.  **Analizar el contenido de la web, buscando todos los enlaces (que
+    en HTML se etiquetan como “a”), buscando el texto del enlace, así
+    como la URL. Vamos a extraer, usando las funciones de búsqueda XML,
+    todos los enlaces que salen de esta página con tal de listarlos y
+    poder descargarlas más tarde. Sabemos que estos son elementos de
+    tipo “**<a>**”, que tienen el atributo “href” para indicar la URL
+    del enlace. P.e. `<a href = ‘enlace’>Texto del Enlace</a>`. Del
+    enlace nos quedaremos con la URL de destino y con el valor del
+    enlace (texto del enlace).**
 
-Para la realización de este ejercicio, donde obtenemos las url y su
-texto correspondiente, lo que hacemos es: primero obtenemos las url con
+Para la realización de este ejercicio, donde obtenemos las URL y su
+texto correspondiente, lo que hacemos es: primero obtenemos las URL con
 *html_attr*, luego obtenemos de la misma forma el texto (lo hacemos por
 separado ya que a partir del *href* no podemos obtener el texto) pero en
 este caso obtenemos solo el texto correspondiente. Finalmente creamos un
-data frame que contiene ambas columnas.
+*data frame* que contiene ambas columnas.
 
 ```{r}
 urls <- html |> html_elements("a") |> html_attr("href")
@@ -112,19 +110,19 @@ datos <- data.frame(
 head(datos, 10)
 ```
 
-4.  Generar una tabla con cada enlace encontrado, indicando el texto que
-    acompaña el enlace, y el número de veces que aparece un enlace con
-    ese mismo objetivo. En este paso nos interesa reunir los datos
+4.  **Generar una tabla con cada enlace encontrado, indicando el texto
+    que acompaña el enlace, y el número de veces que aparece un enlace
+    con ese mismo objetivo. En este paso nos interesa reunir los datos
     obtenidos en el anterior paso. Tendremos que comprobar, para cada
-    enlace, cuantas veces aparece.
+    enlace, cuántas veces aparece.**
 
-Ahora para generar la tabla con las repeticiones, usamos la funcion
-*table* de R. Despues de realizar el conteo de repeticiones, lo
-transformamos en dataframe, de manera que nos queda la tabla que
-teniamos anteriormente, con una columna adicional que es
+Ahora para generar la tabla con las repeticiones, usamos la función
+*table* de R. Después de realizar el conteo de repeticiones, lo
+transformamos en *data frame*, de manera que nos queda la tabla que
+teníamos anteriormente, con una columna adicional que es
 **Repeticiones**. Para eliminar todos aquellos datos que tienen 0
-repeticiones, usamos la funcion *subset* que solamente deja las filas
-que cumplen con la condicion especificada.
+repeticiones, usamos la función *subset* que solamente deja las filas
+que cumplen con la condición especificada.
 
 ```{r}
 tabla_freq <- table(datos)
@@ -135,65 +133,67 @@ datos <- subset(datos, Repeticiones > 0)
 head(datos, 10)
 ```
 
-5.  Para cada enlace, seguirlo e indicar si está activo (podemos usar el
-    código de status HTTP al hacer una petición a esa URL). En este paso
-    podemos usar la función HEAD de la librería “httr”, que en vez de
-    descargarse la página como haría GET, solo consultamos los atributos
-    de la página o fichero destino. HEAD nos retorna una lista de
-    atributos, y de entre estos hay uno llamado “header” que contiene
-    más atributos sobre la página buscada. Si seguimos podemos encontrar
+5.  **Para cada enlace, seguirlo e indicar si está activo (podemos usar
+    el código de status HTTP al hacer una petición a esa URL). En este
+    paso podemos usar la función HEAD de la librería “httr”, que en vez
+    de descargarse la página como haría GET, solo consultamos los
+    atributos de la página o fichero destino. HEAD nos retorna una lista
+    de atributos, y de entre estos hay uno llamado “header” que contiene
+    más atributos sobre la página buscada. Si seguimos podemos encontrar
     el “status_code” en “resultado\$status_code”. El “status_code” nos
-    indica el resultado de la petición de página o fichero. Este código
+    indica el resultado de la petición de página o fichero. Este código
     puede indicar que la petición ha sido correcta (200), que no se ha
-    encontrado (404), que el acceso está restringido (403), etc. • Tened
-    en cuenta que hay enlaces con la URL relativa, con forma
-    “/xxxxxx/xxxxx/a.html”. En este caso, podemos indicarle como
-    “handle” el dominio de la página que estamos tratando, o añadirle el
-    dominio a la URL con la función “paste”. • Tened en cuenta que puede
-    haber enlaces externos con la URL absoluta, con forma
-    “<http://xxxxxx/xxxx/a.html>” (o https), que los trataremos
-    directamente. • Tened en cuenta que puede haber enlaces que apunten
-    a subdominios distintos, con forma “//subdominio/xxxx/xxxx/a.html”.
-    En este caso podemos adjuntarle el prefijo “https:” delante,
-    convirtiendo la URL en absoluta. • Tened en cuenta URLS internas con
-    tags, como por ejemplo “#search-p”. Estos apuntan a la misma página
-    en la que estamos, pero diferente altura de página. Equivale a
-    acceder a la URL relativa de la misma página en la que estamos. Es
-    recomendado poner un tiempo de espera entre petición y petición de
-    pocos segundos (comando “Sys.sleep”), para evitar ser “baneados” por
-    el servidor. Para poder examinar las URLs podemos usar expresiones
-    regulares, funciones como “grep”, o mirar si en los primeros
-    caracteres de la URL encontramos “//” o “http”. Para tratar las URLs
-    podemos usar la ayuda de la función “paste”, para manipular cadenas
-    de caracteres y poder añadir prefijos a las URLs si fuera necesario.
+    encontrado (404), que el acceso está restringido (403), etc.**
+    -   **Tened en cuenta que hay enlaces con la URL relativa, con forma
+        “/xxxxxx/xxxxx/a.html”. En este caso, podemos indicarle como
+        “handle” el dominio de la página que estamos tratando, o
+        añadirle el dominio a la URL con la función “paste”.**
+    -   **Tened en cuenta que puede haber enlaces externos con la URL
+        absoluta, con forma “<http://xxxxxx/xxxx/a.html>” (o https), que
+        los trataremos directamente.**
+    -   **Tened en cuenta que puede haber enlaces que apunten a
+        subdominios distintos, con forma
+        “//subdominio/xxxx/xxxx/a.html”. En este caso podemos adjuntarle
+        el prefijo “https:” delante, convirtiendo la URL en absoluta.**
+    -   **Tened en cuenta URLS internas con tags, como por ejemplo
+        “#search-p”. Estos apuntan a la misma página en la que estamos,
+        pero diferente altura de página. Equivale a acceder a la URL
+        relativa de la misma página en la que estamos. Es recomendado
+        poner un tiempo de espera entre petición y petición de pocos
+        segundos (comando “Sys.sleep”), para evitar ser “baneados” por
+        el servidor. Para poder examinar las URLs podemos usar
+        expresiones regulares, funciones como “grep”, o mirar si en los
+        primeros caracteres de la URL encontramos “//” o “http”. Para
+        tratar las URLs podemos usar la ayuda de la función “paste”,
+        para manipular cadenas de caracteres y poder añadir prefijos a
+        las URLs si fuera necesario.**
 
-Primero hacemos una copia del data frame para poder modificar hacer
+Primero hacemos una copia del *data frame* para poder modificar hacer
 modificaciones de las URL y que no tenga impacto para los siguientes
-ejercicios
+ejercicios.
 
 ```{r}
 copia_datos <- datos
 ```
 
-Primero substituimos los *\#* por la ULR que habiamos guardado al
-principio, ya que los *\#* significan que se esta apintando a esa misma
-pagina, pero a alturas distintas de esta.
+Luego sustituimos los ***\#*** por la URL que habíamos guardado al
+principio, ya que los ***\#*** significan que se está apuntando a esa
+misma página, pero a alturas distintas de esta.
 
 ```{r}
 datos$URL <- gsub("#", url, datos$URL)
 head(datos)
 ```
 
-Luego, para tratar las URL relativas i las absolutas que empiezen por
-*//*, realizamos una busqueda con sustitucion para los valores del data
-frame que cumplan las siguientes condiciones:
+Luego, para tratar las URL relativas y las absolutas que empiecen por
+*//*, realizamos una búsqueda con sustitución para los valores del *data
+frame* que cumplan las siguientes condiciones:
 
-1.  Que empiezen por **//***.*
+1.  Que empiecen por **//**.
+2.  Que empiecen por **/**.
 
-2.  Que empiezen por **/**.
-
-La razon del orden es basicamente porque si se hiciera del revés
-afectaria a las URL que tuviesen los **//.**
+La razón del orden es básicamente porque si se hiciera del revés
+afectaría a las URL que tuviesen los **//**.
 
 ```{r}
 base_url <- "https:"
@@ -203,24 +203,25 @@ datos <- datos %>%
   mutate(URL = if_else(
     condition = str_starts(URL, "//"),  
     true      = str_c(base_url, URL),   
-    false     = URL                     
+    false     = URL                      
   ))
 
 datos <- datos %>%
   mutate(URL = if_else(
     condition = str_starts(URL, "/"),  
     true      = str_c(main_url, URL),   
-    false     = URL                     
+    false     = URL                      
   ))
 ```
 
-Luego vamos iterando por todas las filas del data frame y realizamos una
-conexion a la URL (Usando la funcion *session* de **rvest** y guardamos
-el atributo status_code de la respuesta, luego se realiza una pequeña
-pausa para no estresar el servidor.
+Seguidamente vamos iterando por todas las filas del *data frame* y
+realizamos una conexión a la URL (usando la función *session* de
+**rvest** y guardamos el atributo `status_code` de la respuesta, luego
+se realiza una pequeña pausa para no estresar el servidor.
 
-Luego volvemos a cambiar los datos por los por los originales y
-guradamos los datos en una nueva columan que nombramos **Estado.**
+Finalmente volvemos a cambiar los datos que recien acabamos de tratar
+por los originales y guardamos los datos en una nueva columna que
+nombramos **Estado**.
 
 ```{r}
 s <- c()
@@ -228,7 +229,10 @@ for (i in 1:length(datos$URL)) {
   s[i] <- as.character(session(as.character(datos$URL[i]))$response$status_code)
   Sys.sleep(0.1)
 }
+
+datos_limpios <- datos
 datos <- copia_datos
+
 datos$Estado <- s
 
 head(datos)
@@ -236,68 +240,71 @@ head(datos)
 
 ## Pregunta 2:
 
-Elaborad, usando las librerías de gráficos base y qplot (ggplot2), una
+**Elaborad, usando las librerías de gráficos base y qplot (ggplot2), una
 infografía sobre los datos obtenidos. Tal infografía será una reunión de
-gráficos donde se muestren los siguientes detalles:
+gráficos donde se muestren los siguientes detalles:**
 
-1.  Un histograma con la frecuencia de aparición de los enlaces, pero
-    separado por URLs absolutas (con “http…”) y URLs relativas.
+1.  **Un histograma con la frecuencia de aparición de los enlaces, pero
+    separado por URLs absolutas (con “http…”) y URLs relativas.**
 
 Para conseguir las URL relativas y absolutas realizamos el siguiente
-calculo:
+cálculo:
 
-1.  **Absolutas** = URL que **no** empiezan por **/** + URL no que
-    empiezen por **#.**
-
-2.  **Relativas** = URL que empiezen por / o URL que empiezen por **#.**
+1.  **Absolutas** = URL que **no** empiezan por **/** + URL que **no**
+    empiezan por **\#**.
+2.  **Relativas** = URL que empiezan por / o URL que empiezan por
+    **\#**.
 
 ```{r}
 absolutas <- datos[!str_starts(datos$URL, "/") & !str_starts(datos$URL, "#"), ]
 relativas <- datos[str_starts(datos$URL, "/") | str_starts(datos$URL, "#"), ]
 ```
 
-Entonces una vez hecha la division creamos las dos tablas donde el eje X
+Entonces una vez hecha la división creamos las dos tablas donde el eje X
 serán nuestras URL y el eje Y serán las veces que aparecen o
-*Repeticiones.*
+*Repeticiones*.
 
 ```{r}
-absolutas %>%
-  ggplot(aes(x=URL, y=Repeticiones)) +
+barplot_absolutas <- absolutas %>%
+    ggplot(aes(x=URL, y=Repeticiones)) +
     geom_bar(stat="identity", fill="#f68060", alpha=.6, width=.4) +
     coord_flip() +
     theme_bw() +
     # Reduce el tamaño del texto del eje Y (que ahora está a la izquierda)
     theme(axis.text.y = element_text(size = 2))
+
+barplot_absolutas
 ```
 
 ```{r}
-relativas %>%
-  ggplot(aes(x=URL, y=Repeticiones)) +
+barplot_relativas <-relativas %>%
+    ggplot(aes(x=URL, y=Repeticiones)) +
     geom_bar(stat="identity", fill="#f68060", alpha=.6, width=.4) +
     coord_flip() +
     theme_bw() +
     # Reduce el tamaño del texto del eje Y (que ahora está a la izquierda)
     theme(axis.text.y = element_text(size = 2))
+
+barplot_relativas
 ```
 
-2.  Un gráfico de barras indicando la suma de enlaces que apuntan a
+2.  **Un gráfico de barras indicando la suma de enlaces que apuntan a
     otros dominios o servicios (distinto a <https://www.mediawiki.org>
     en el caso de ejemplo) vs. la suma de los otros enlaces. Aquí
     queremos distinguir enlaces que apuntan a mediawiki versus el resto.
     Sabemos que las URLs relativas ya apuntan dentro, por lo tanto hay
     que analizar las URLs absolutas y comprobar que apunten a
-    <https://www.mediawiki.org>.
+    <https://www.mediawiki.org>.**
 
-Para el siguiente grafico de barras, decidimos almacenar las
-**Repeticiones** de las url que apuntan a otros dominios de las que
-apuntan al mismo. Para ello realizamos los siguientes calculos:
+Para el siguiente gráfico de barras, decidimos almacenar las
+**Repeticiones** de las URL que apuntan a otros dominios de las que
+apuntan al mismo. Para ello realizamos los siguientes cálculos:
 
 1.  **Dominio:** Es la suma de las Repeticiones de URLs **Relativas** +
     suma de las Repeticiones de URLs **Absolutas** que empiezan por
     <https://www.mediawiki.org>.
-
 2.  **Otros:** Es la suma de las Repeticiones de URLs **Absolutas** que
-    **NO** empiezan por [https://www.mediawiki.org](#0){.uri}.
+    **NO** empiezan por <https://www.mediawiki.org>.
 
 ```{r}
 dominio <- sum(relativas$Repeticiones) + sum(absolutas[str_starts(absolutas$URL, main_url), "Repeticiones"])
@@ -308,9 +315,9 @@ total
 dominio + otros
 ```
 
-Luego creamos un barplot que representara el pequeño data frame que
+Luego creamos un *barplot* que representará el pequeño *data frame* que
 acabamos de formar con estas dos variables y lo representamos
-graficamente usando la libreria de *ggplot2*.
+gráficamente usando la librería de *ggplot2*.
 
 ```{r}
 dominio_o_no <- data.frame(
@@ -318,27 +325,29 @@ dominio_o_no <- data.frame(
   Cantidad=c(dominio, otros)
 )
 
-ggplot(dominio_o_no, aes(x=Tipo, y=Cantidad, fill=Tipo)) +  
+barplot_dominio <- ggplot(dominio_o_no, aes(x=Tipo, y=Cantidad, fill=Tipo)) +  
   geom_col() + 
   scale_fill_manual(values = c("red", "blue") ) +
   theme_bw() +
   theme(legend.position="none")
+
+barplot_dominio
 ```
 
-3.  Un gráfico de tarta (pie chart) indicando los porcentajes de Status
-    de nuestro análisis. Por ejemplo, si hay 6 enlaces con status “200”
-    y 4 enlaces con status “404”, la tarta mostrará un 60% con la
+3.  **Un gráfico de tarta (*pie chart*) indicando los porcentajes de
+    Status de nuestro análisis. Por ejemplo, si hay 6 enlaces con status
+    “200” y 4 enlaces con status “404”, la tarta mostrará un 60% con la
     etiqueta “200” y un 40% con la etiqueta “404”. Este gráfico lo
     uniremos a los anteriores. El objetivo final es obtener una imagen
-    que recopile los gráficos generados.
+    que recopile los gráficos generados.**
 
-Para este ultimo ejercicio hacemos algo parecido al anterior, donde en
-este caso solo realizamos el conteo de que URL tenian *status_code* 200
-y cuales tenian *status_code* 404.
+Para este último ejercicio hacemos algo parecido al anterior, donde en
+este caso solo realizamos el conteo de qué URL tenían *status_code* 200
+y cuáles tenían *status_code* 404.
 
 ```{r}
-estado_200 <- count(datos[str_starts(absolutas$Estado, "200"), ]) 
-estado_404 <- count(datos[str_starts(absolutas$Estado, "404"), ])
+estado_200 <- count(datos[str_starts(datos$Estado, "200"), ]) 
+estado_404 <- count(datos[str_starts(datos$Estado, "404"), ])
 ```
 
 Y finalmente realizamos el mismo proceso de antes, pero ahora creamos un
@@ -351,7 +360,46 @@ estados <- data.frame(
   Cantidad=c(estado_200[1,1], estado_404[1,1])
 )
 
-ggplot(estados, aes(x="", y=Cantidad, fill=Tipo)) +
+pie_chart <- ggplot(estados, aes(x="", y=Cantidad, fill=Tipo)) +
   geom_bar(stat="identity", width=1, color="white") +
   coord_polar("y", start=0)
+
+pie_chart
+```
+
+Para terminar, aqui tenemos todas las graficas en una misma imagen:
+
+```{r}
+grafico_final <- (barplot_absolutas + barplot_relativas) / (barplot_dominio + pie_chart)
+
+grafico_final
+```
+
+Aquí está el codigo para poder descargar las imagenes como png:
+
+```{r}
+# BARPLOT ABSOLUTAS
+png("barplot_absolutas.png", width = 12000, height = 9000, res = 1000)
+print(barplot_absolutas)
+dev.off()
+
+# BARPLOT RELATIVAS
+png("barplot_relativas.png", width = 12000, height = 9000, res = 1000)
+print(barplot_relativas)
+dev.off()
+
+# BARPLOT DOMINIO
+png("barplot_dominio.png", width = 2400, height = 1800, res = 200)
+print(barplot_dominio)
+dev.off()
+
+# PIE CHART
+png("pie_chart.png", width = 2400, height = 1800, res = 200)
+print(pie_chart)
+dev.off()
+
+# GRAFICO FINAL
+png("grafico_final.png", width = 24000, height = 18000, res = 2000)
+print(grafico_final)
+dev.off()
 ```
